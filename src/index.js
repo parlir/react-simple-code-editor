@@ -15,7 +15,7 @@ type Props = React.ElementConfig<"div"> & {
   style?: {},
 
   // Props for the textarea
-  TextareaComponent?: React.Component<any>,
+  TextAreaComponent?: React.Component<any>,
   textareaId?: string,
   textareaClassName?: string,
   autoFocus?: boolean,
@@ -511,7 +511,7 @@ export default class Editor extends React.Component<Props, State> {
       style,
       padding,
       highlight,
-      TextareaComponent,
+      TextAreaComponent,
       textareaId,
       textareaClassName,
       autoFocus,
@@ -549,7 +549,7 @@ export default class Editor extends React.Component<Props, State> {
 
     return (
       <div {...rest} style={{ ...styles.container, ...style }}>
-        <TextareaComponent
+        <TextAreaComponent
           ref={(c) =>
             // $FlowFixMe
             (this._input = c)
