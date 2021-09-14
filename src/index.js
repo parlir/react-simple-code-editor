@@ -1,9 +1,9 @@
 /* @flow */
 /* global global */
 
-import * as React from 'react';
+import * as React from "react";
 
-type Props = React.ElementConfig<'div'> & {
+type Props = React.ElementConfig<"div"> & {
   // Props for the component
   value: string,
   onValueChange: (value: string) => mixed,
@@ -15,6 +15,7 @@ type Props = React.ElementConfig<'div'> & {
   style?: {},
 
   // Props for the textarea
+  textareaComponent?: React.Component<any>,
   textareaId?: string,
   textareaClassName?: string,
   autoFocus?: boolean,
@@ -66,11 +67,11 @@ const KEYCODE_ESCAPE = 27;
 const HISTORY_LIMIT = 100;
 const HISTORY_TIME_GAP = 3000;
 
-const isWindows = 'navigator' in global && /Win/i.test(navigator.platform);
+const isWindows = "navigator" in global && /Win/i.test(navigator.platform);
 const isMacLike =
-  'navigator' in global && /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);
+  "navigator" in global && /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);
 
-const className = 'npm__react-simple-code-editor__textarea';
+const className = "npm__react-simple-code-editor__textarea";
 
 const cssText = /* CSS */ `
 /**
@@ -106,6 +107,7 @@ export default class Editor extends React.Component<Props, State> {
     insertSpaces: true,
     ignoreTabKey: false,
     padding: 0,
+    textAreaComponent: (props: any) => <textarea {...props} />,
   };
 
   state = {
@@ -132,7 +134,7 @@ export default class Editor extends React.Component<Props, State> {
   };
 
   _getLines = (text: string, position: number) =>
-    text.substring(0, position).split('\n');
+    text.substring(0, position).split("\n");
 
   _recordChange = (record: Record, overwrite?: boolean = false) => {
     const { stack, offset } = this._history;
@@ -262,7 +264,7 @@ export default class Editor extends React.Component<Props, State> {
 
     const { value, selectionStart, selectionEnd } = e.target;
 
-    const tabCharacter = (insertSpaces ? ' ' : '\t').repeat(tabSize);
+    const tabCharacter = (insertSpaces ? " " : "\t").repeat(tabSize);
 
     if (e.keyCode === KEYCODE_TAB && !ignoreTabKey && this.state.capture) {
       // Prevent focus change
@@ -274,7 +276,7 @@ export default class Editor extends React.Component<Props, State> {
         const startLine = linesBeforeCaret.length - 1;
         const endLine = this._getLines(value, selectionEnd).length - 1;
         const nextValue = value
-          .split('\n')
+          .split("\n")
           .map((line, i) => {
             if (
               i >= startLine &&
@@ -286,7 +288,7 @@ export default class Editor extends React.Component<Props, State> {
 
             return line;
           })
-          .join('\n');
+          .join("\n");
 
         if (value !== nextValue) {
           const startLineText = linesBeforeCaret[startLine];
@@ -311,7 +313,7 @@ export default class Editor extends React.Component<Props, State> {
 
         this._applyEdits({
           value: value
-            .split('\n')
+            .split("\n")
             .map((line, i) => {
               if (i >= startLine && i <= endLine) {
                 return tabCharacter + line;
@@ -319,7 +321,7 @@ export default class Editor extends React.Component<Props, State> {
 
               return line;
             })
-            .join('\n'),
+            .join("\n"),
           // Move the start cursor by number of characters added in first line of selection
           // Don't move it if it there was no text before cursor
           selectionStart: /\S/.test(startLineText)
@@ -374,7 +376,7 @@ export default class Editor extends React.Component<Props, State> {
           e.preventDefault();
 
           // Preserve indentation on inserting a new line
-          const indent = '\n' + matches[0];
+          const indent = "\n" + matches[0];
           const updatedSelection = selectionStart + indent.length;
 
           this._applyEdits({
@@ -398,12 +400,12 @@ export default class Editor extends React.Component<Props, State> {
       let chars;
 
       if (e.keyCode === KEYCODE_PARENS && e.shiftKey) {
-        chars = ['(', ')'];
+        chars = ["(", ")"];
       } else if (e.keyCode === KEYCODE_BRACKETS) {
         if (e.shiftKey) {
-          chars = ['{', '}'];
+          chars = ["{", "}"];
         } else {
-          chars = ['[', ']'];
+          chars = ["[", "]"];
         }
       } else if (e.keyCode === KEYCODE_QUOTE) {
         if (e.shiftKey) {
@@ -412,7 +414,7 @@ export default class Editor extends React.Component<Props, State> {
           chars = ["'", "'"];
         }
       } else if (e.keyCode === KEYCODE_BACK_QUOTE && !e.shiftKey) {
-        chars = ['`', '`'];
+        chars = ["`", "`"];
       }
 
       // If text is selected, wrap them in the characters
@@ -448,10 +450,10 @@ export default class Editor extends React.Component<Props, State> {
         ? // Trigger redo with ⌘+Shift+Z on Mac
           e.metaKey && e.keyCode === KEYCODE_Z && e.shiftKey
         : isWindows
-          ? // Trigger redo with Ctrl+Y on Windows
-            e.ctrlKey && e.keyCode === KEYCODE_Y
-          : // Trigger redo with Ctrl+Shift+Z on other platforms
-            e.ctrlKey && e.keyCode === KEYCODE_Z && e.shiftKey) &&
+        ? // Trigger redo with Ctrl+Y on Windows
+          e.ctrlKey && e.keyCode === KEYCODE_Y
+        : // Trigger redo with Ctrl+Shift+Z on other platforms
+          e.ctrlKey && e.keyCode === KEYCODE_Z && e.shiftKey) &&
       !e.altKey
     ) {
       e.preventDefault();
@@ -465,7 +467,7 @@ export default class Editor extends React.Component<Props, State> {
       e.preventDefault();
 
       // Toggle capturing tab key so users can focus away
-      this.setState(state => ({
+      this.setState((state) => ({
         capture: !state.capture,
       }));
     }
@@ -509,6 +511,7 @@ export default class Editor extends React.Component<Props, State> {
       style,
       padding,
       highlight,
+      textareaComponent,
       textareaId,
       textareaClassName,
       autoFocus,
@@ -546,15 +549,18 @@ export default class Editor extends React.Component<Props, State> {
 
     return (
       <div {...rest} style={{ ...styles.container, ...style }}>
-        <textarea
-          ref={c => (this._input = c)}
+        <textareaComponent
+          ref={(c) =>
+            // $FlowFixMe
+            (this._input = c)
+          }
           style={{
             ...styles.editor,
             ...styles.textarea,
             ...contentStyle,
           }}
           className={
-            className + (textareaClassName ? ` ${textareaClassName}` : '')
+            className + (textareaClassName ? ` ${textareaClassName}` : "")
           }
           id={textareaId}
           value={value}
@@ -583,8 +589,8 @@ export default class Editor extends React.Component<Props, State> {
           className={preClassName}
           aria-hidden="true"
           style={{ ...styles.editor, ...styles.highlight, ...contentStyle }}
-          {...(typeof highlighted === 'string'
-            ? { dangerouslySetInnerHTML: { __html: highlighted + '<br />' } }
+          {...(typeof highlighted === "string"
+            ? { dangerouslySetInnerHTML: { __html: highlighted + "<br />" } }
             : { children: highlighted })}
         />
         {/* eslint-disable-next-line react/no-danger */}
@@ -596,48 +602,48 @@ export default class Editor extends React.Component<Props, State> {
 
 const styles = {
   container: {
-    position: 'relative',
-    textAlign: 'left',
-    boxSizing: 'border-box',
+    position: "relative",
+    textAlign: "left",
+    boxSizing: "border-box",
     padding: 0,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   textarea: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
-    height: '100%',
-    width: '100%',
-    resize: 'none',
-    color: 'inherit',
-    overflow: 'hidden',
-    MozOsxFontSmoothing: 'grayscale',
-    WebkitFontSmoothing: 'antialiased',
-    WebkitTextFillColor: 'transparent',
+    height: "100%",
+    width: "100%",
+    resize: "none",
+    color: "inherit",
+    overflow: "hidden",
+    MozOsxFontSmoothing: "grayscale",
+    WebkitFontSmoothing: "antialiased",
+    WebkitTextFillColor: "transparent",
   },
   highlight: {
-    position: 'relative',
-    pointerEvents: 'none',
+    position: "relative",
+    pointerEvents: "none",
   },
   editor: {
     margin: 0,
     border: 0,
-    background: 'none',
-    boxSizing: 'inherit',
-    display: 'inherit',
-    fontFamily: 'inherit',
-    fontSize: 'inherit',
-    fontStyle: 'inherit',
-    fontVariantLigatures: 'inherit',
-    fontWeight: 'inherit',
-    letterSpacing: 'inherit',
-    lineHeight: 'inherit',
-    tabSize: 'inherit',
-    textIndent: 'inherit',
-    textRendering: 'inherit',
-    textTransform: 'inherit',
-    whiteSpace: 'pre-wrap',
-    wordBreak: 'keep-all',
-    overflowWrap: 'break-word',
+    background: "none",
+    boxSizing: "inherit",
+    display: "inherit",
+    fontFamily: "inherit",
+    fontSize: "inherit",
+    fontStyle: "inherit",
+    fontVariantLigatures: "inherit",
+    fontWeight: "inherit",
+    letterSpacing: "inherit",
+    lineHeight: "inherit",
+    tabSize: "inherit",
+    textIndent: "inherit",
+    textRendering: "inherit",
+    textTransform: "inherit",
+    whiteSpace: "pre-wrap",
+    wordBreak: "keep-all",
+    overflowWrap: "break-word",
   },
 };
