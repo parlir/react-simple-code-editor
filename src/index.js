@@ -127,9 +127,9 @@ export default class Editor extends React.Component<Props, State> {
     const { value, selectionStart, selectionEnd } = input;
 
     this._recordChange({
-      value,
-      selectionStart,
-      selectionEnd,
+      value || "",
+      selectionStart || 0,
+      selectionEnd || 0,
     });
   };
 
